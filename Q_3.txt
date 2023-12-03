@@ -1,0 +1,95 @@
+Q.3 Create a clone of the “Hacker News” website. 
+
+Ans -> 
+
+1) HTML (index.html):
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Hacker News Clone</title>
+</head>
+<body>
+    <header>
+        <h1>Hacker News Clone</h1>
+    </header>
+
+    <main>
+        <div id="news-list"></div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+2) CSS (styles.css):
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #ff6600;
+    padding: 1em;
+    text-align: center;
+    color: white;
+}
+
+main {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 10px;
+}
+
+.news-item {
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+}
+
+a {
+    text-decoration: none;
+    color: #000;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+
+3) JavaScript (app.js):
+document.addEventListener('DOMContentLoaded', function () {
+    const newsList = document.getElementById('news-list');
+
+    // Fetch data from Hacker News API
+    fetch('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
+        .then(response => response.json())
+        .then(data => {
+            // Get the first 10 story IDs
+            const topStories = data.slice(0, 10);
+
+            // Fetch details for each story
+            return Promise.all(topStories.map(storyId =>
+                fetch(`https://hacker-news.firebaseio.com/v0/item/${storyId}.json?print=pretty`)
+                    .then(response => response.json())
+            ));
+        })
+        .then(stories => {
+            // Render each story
+            stories.forEach(story => {
+                const item = document.createElement('div');
+                item.classList.add('news-item');
+                item.innerHTML = `
+                    <h2><a href="${story.url}" target="_blank">${story.title}</a></h2>
+                    <p>Score: ${story.score} | By: ${story.by}</p>
+                `;
+                newsList.appendChild(item);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+});
